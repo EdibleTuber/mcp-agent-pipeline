@@ -49,11 +49,14 @@ class Pipeline:
         config_path: str | Path | None = None,
     ):
         self.shared_volume = Path(shared_volume)
+        self.sse_read_timeout: int = 60 * 60  # default 1 hour
         if config_path is not None:
             self.stages, loaded_urls, settings = _load_pipeline_config(config_path)
             self.agent_urls = agent_urls if agent_urls is not None else loaded_urls
             if "shared_volume" in settings:
                 self.shared_volume = Path(settings["shared_volume"])
+            if "sse_read_timeout" in settings:
+                self.sse_read_timeout = int(settings["sse_read_timeout"])
         else:
             self.stages = []
             self.agent_urls = agent_urls or {}
@@ -97,7 +100,7 @@ class Pipeline:
 
         logger.info("Calling agent: %s (stage: %s)", agent_name, stage_name)
         try:
-            async with sse_client(url, sse_read_timeout=60 * 60) as (read, write):
+            async with sse_client(url, sse_read_timeout=self.sse_read_timeout) as (read, write):
                 async with ClientSession(read, write) as session:
                     await session.initialize()
 

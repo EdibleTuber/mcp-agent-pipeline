@@ -1,0 +1,27 @@
+# pipeline.yml — edit this file to define your pipeline
+# Each stage runs its agents in sequence (or parallel if parallel: true)
+# Adding an agent requires 2 lines here + 1 service block in docker-compose.yml
+
+stages:
+  - name: stage_one
+    agents:
+      - agent_alpha
+    parallel: false
+
+  - name: stage_two
+    agents:
+      - agent_beta
+      - agent_gamma
+    parallel: true   # agents in this stage run concurrently
+
+agents:
+  agent_alpha:
+    url: "http://agent_alpha:8080/sse"
+  agent_beta:
+    url: "http://agent_beta:8080/sse"
+  agent_gamma:
+    url: "http://agent_gamma:8080/sse"
+
+settings:
+  shared_volume: /work/shared
+  sse_read_timeout: 3600   # seconds — increase for slow LLM hardware

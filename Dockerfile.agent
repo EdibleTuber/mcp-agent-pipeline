@@ -1,0 +1,20 @@
+FROM python:3.11-slim
+
+WORKDIR /app
+
+# AGENT_MODULE: Python module name for this agent (e.g. "my_agent")
+ARG AGENT_MODULE
+ENV AGENT_MODULE=${AGENT_MODULE}
+
+# Install dependencies first (better layer caching)
+COPY pyproject.toml .
+COPY src/framework/__init__.py ./src/framework/__init__.py
+RUN pip install --no-cache-dir .
+
+# Copy full source
+COPY src/ ./src/
+RUN pip install --no-cache-dir .
+
+EXPOSE 8080
+# Agents expose an SSE server via their server.py module
+CMD python -m ${AGENT_MODULE}.server

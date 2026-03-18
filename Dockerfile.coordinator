@@ -1,0 +1,16 @@
+FROM python:3.11-slim
+
+WORKDIR /app
+
+# Install dependencies first (better layer caching)
+COPY pyproject.toml .
+COPY src/framework/__init__.py ./src/framework/__init__.py
+RUN pip install --no-cache-dir .
+
+# Copy full source
+COPY src/ ./src/
+COPY pipeline.yml ./pipeline.yml
+RUN pip install --no-cache-dir .
+
+EXPOSE 8000
+CMD ["python", "-m", "framework.coordinator.main"]
